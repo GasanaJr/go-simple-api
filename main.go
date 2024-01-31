@@ -43,6 +43,32 @@ func deleteItem(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func updateItem(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+	var newItem Item
+	_ = json.NewDecoder(r.Body).Decode(&newItem)
+	for index, item := range Items {
+		if item.ID == params["id"] {
+			id := item.ID
+			Items = append(Items[:index], Items[index+1:]...)
+			newItem.ID = id
+			Items = append(Items, newItem)
+		}
+	}
+	json.NewEncoder(w).Encode(Items)
+}
+
+func createItem(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var item Item
+	_ = json.NewDecoder(r.Body).Decode(&item)
+	item.ID = strconv.Itoa(rand.Int())
+	Items = append(Items, item)
+	json.NewEncoder(w).Encode(Items)
+
+}
+
 func getItem(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
@@ -81,8 +107,8 @@ func main() {
 
 	r.HandleFunc("/Items", getItems).Methods("GET")
 	r.HandleFunc("/Items/{id}", getItem).Methods("GET")
-	// r.HandleFunc("/Items", createItem).Methods("POST")
-	// r.HandleFunc("/Items/{id}", updateItem).Methods("PUT")
+	r.HandleFunc("/Items", createItem).Methods("POST")
+	r.HandleFunc("/Items/{id}", updateItem).Methods("PUT")
 	r.HandleFunc("/Items/{id}", deleteItem).Methods("DELETE")
 
 	fmt.Printf("Server listening on 8000 \n")
