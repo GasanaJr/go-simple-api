@@ -43,6 +43,19 @@ func deleteItem(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func getItem(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+	for _, item := range Items {
+		if item.ID == params["id"] {
+			json.NewEncoder(w).Encode(item)
+			return
+		} else {
+			fmt.Printf("The item with id %v is not found in our collection", params["id"])
+		}
+	}
+}
+
 func main() {
 	r := mux.NewRouter()
 
@@ -67,11 +80,11 @@ func main() {
 	})
 
 	r.HandleFunc("/Items", getItems).Methods("GET")
-	// r.HandleFunc("/Items/{id}", getItem).Methods("GET")
+	r.HandleFunc("/Items/{id}", getItem).Methods("GET")
 	// r.HandleFunc("/Items", createItem).Methods("POST")
 	// r.HandleFunc("/Items/{id}", updateItem).Methods("PUT")
 	r.HandleFunc("/Items/{id}", deleteItem).Methods("DELETE")
 
-	fmt.Printf("Server listening on 8000")
+	fmt.Printf("Server listening on 8000 \n")
 	log.Fatal(http.ListenAndServe(":8000", r))
 }
